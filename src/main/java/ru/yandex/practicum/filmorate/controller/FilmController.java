@@ -17,8 +17,8 @@ import java.util.Map;
 @RequestMapping("/films")
 @Slf4j
 public class FilmController extends FilmorateController<Film> {
-    public static final int DESCRIPTION_MAX_LENGTH = 200;
-    public static final LocalDate FILMOGRAPHY_START_DATE = LocalDate.of(1895, 12, 28);
+    private static final int DESCRIPTION_MAX_LENGTH = 200;
+    private static final LocalDate FILMOGRAPHY_START_DATE = LocalDate.of(1895, 12, 28);
     private Map<Long, Film> films = new HashMap<>();
     private Long counter = 0L;
 
