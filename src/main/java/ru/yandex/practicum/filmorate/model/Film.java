@@ -19,7 +19,9 @@ public class Film {
     @NotNull(message = "name can't be empty")
     @NotBlank(message = "name can't be empty")
     private String name;
+    @NotNull(message = "description can't be null")
     private String description;
+    @NotNull(message = "releaseDate can't be null")
     private LocalDate releaseDate;
     @Positive(message = "duration should be positive")
     private Long duration;
