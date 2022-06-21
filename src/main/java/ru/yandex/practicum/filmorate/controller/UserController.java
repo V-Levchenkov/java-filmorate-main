@@ -1,54 +1,60 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
-@Slf4j
-public class UserController extends FilmorateController<User> {
-    private final Map<Long, User> users = new HashMap<>();
-    private Long counter = 0L;
+public class UserController {
+    private final UserService userService;
 
-    public Long generateId() {
-        return ++counter;
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
-    @Override
+    @GetMapping
     public Collection<User> getAll() {
-        return users.values();
+        return userService.getAll();
     }
 
-    @Override
+    @PostMapping
     public User create(@Valid @RequestBody User user) {
-        log.debug("Запрос на добавление пользователя: {}", user);
-        if (user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        Long userId = generateId();
-        user.setId(userId);
-        users.put(userId, user);
-        log.info("Добавлен пользователь: {}", user);
-        return user;
+        return userService.create(user);
     }
 
-    @Override
+    @PutMapping
     public User update(@Valid @RequestBody User user) {
-        log.debug("Запрос на обновление пользователя: {}", user);
-        if (user.getId() < 1) {
-            throw new ValidationException("Неверный идентификатор пользователя");
-        }
-        users.put(user.getId(), user);
-        log.info("Обновлен пользователь: {}", user);
-        return user;
+        return userService.update(user);
+    }
+
+    @GetMapping("/{id}")
+    public User getFilm(@PathVariable Long id) {
+        return userService.getUser(id);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> getFriends(@PathVariable Long id) {
+        return userService.getUserFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+        return userService.getCommonFriends(id, otherId);
     }
 }
