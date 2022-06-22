@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class FilmService {
-    public static final int DESCRIPTION_MAX_LENGTH = 200;
-    public static final LocalDate FILMOGRAPHY_START_DATE = LocalDate.of(1895, 12, 28);
+    private static final int DESCRIPTION_MAX_LENGTH = 200;
+    private static final LocalDate FILMOGRAPHY_START_DATE = LocalDate.of(1895, 12, 28);
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
@@ -40,20 +40,20 @@ public class FilmService {
     }
 
     public Film update(@Valid @RequestBody Film film) {
-        filmExistOrThrow(film.getId());
+        existOrThrowFilm(film.getId());
         validateFilm(film);
         return filmStorage.update(film);
     }
 
     public void addLike(Long filmId, Long userId) {
-        filmExistOrThrow(filmId);
-        userExistOrThrow(userId);
+        existOrThrowFilm(filmId);
+        existOrThrowUser(userId);
         filmStorage.getFilm(filmId).addLike(userId);
     }
 
     public void removeLike(Long filmId, Long userId) {
-        filmExistOrThrow(filmId);
-        userExistOrThrow(userId);
+        existOrThrowFilm(filmId);
+        existOrThrowUser(userId);
         filmStorage.getFilm(filmId).removeLike(userId);
     }
 
@@ -65,11 +65,11 @@ public class FilmService {
     }
 
     public Film getFilm(Long filmId) {
-        filmExistOrThrow(filmId);
+        existOrThrowFilm(filmId);
         return filmStorage.getFilm(filmId);
     }
 
-    private void userExistOrThrow(Long userId) {
+    private void existOrThrowUser(Long userId) {
         boolean isUserNotExist = userStorage.getAll().stream()
                 .noneMatch(user -> user.getId().equals(userId));
         if (isUserNotExist) {
@@ -77,7 +77,7 @@ public class FilmService {
         }
     }
 
-    private void filmExistOrThrow(Long filmId) {
+    private void existOrThrowFilm(Long filmId) {
         boolean isFilmNotExist = filmStorage.getAll().stream()
                 .noneMatch(film -> film.getId().equals(filmId));
         if (isFilmNotExist) {

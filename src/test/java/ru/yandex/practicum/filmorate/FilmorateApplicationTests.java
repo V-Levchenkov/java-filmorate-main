@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+
 import java.time.LocalDate;
 
 import static java.time.LocalDate.now;
@@ -76,7 +77,7 @@ class FilmorateApplicationTests {
         Film film = new Film();
         film.setName("Interstellar");
         film.setDescription("no time for caution");
-        film.setReleaseDate(LocalDate.of(2014, 4, 26));
+        film.setReleaseDate(LocalDate.of(2014,4,26));
         film.setDuration(0L);
         var message = validator.validate(film).iterator().next().getMessage();
         assertEquals("duration should be positive", message);
@@ -87,7 +88,7 @@ class FilmorateApplicationTests {
         Film film = new Film();
         film.setName("Interstellar");
         film.setDescription("no time for caution");
-        film.setReleaseDate(LocalDate.of(2014, 4, 26));
+        film.setReleaseDate(LocalDate.of(2014,4,26));
         film.setDuration(-1L);
         var message = validator.validate(film).iterator().next().getMessage();
         assertEquals("duration should be positive", message);
