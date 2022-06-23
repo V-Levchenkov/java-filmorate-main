@@ -40,20 +40,20 @@ public class FilmService {
     }
 
     public Film update(@Valid @RequestBody Film film) {
-        getFilmById(film.getId());
+        findFilmById(film.getId());
         validateFilm(film);
         return filmStorage.update(film);
     }
 
     public void addLike(Long filmId, Long userId) {
-        getFilmById(filmId);
-        getUserById(userId);
+        findFilmById(filmId);
+        findUserById(userId);
         filmStorage.getFilm(filmId).addLike(userId);
     }
 
     public void removeLike(Long filmId, Long userId) {
-        getFilmById(filmId);
-        getUserById(userId);
+        findFilmById(filmId);
+        findUserById(userId);
         filmStorage.getFilm(filmId).removeLike(userId);
     }
 
@@ -65,11 +65,11 @@ public class FilmService {
     }
 
     public Film getFilm(Long filmId) {
-        getFilmById(filmId);
+        findFilmById(filmId);
         return filmStorage.getFilm(filmId);
     }
 
-    private void getUserById(Long userId) {
+    private void findUserById(Long userId) {
         boolean isUserNotExist = userStorage.getAll().stream()
                 .noneMatch(user -> user.getId().equals(userId));
         if (isUserNotExist) {
@@ -77,7 +77,7 @@ public class FilmService {
         }
     }
 
-    private void getFilmById(Long filmId) {
+    private void findFilmById(Long filmId) {
         boolean isFilmNotExist = filmStorage.getAll().stream()
                 .noneMatch(film -> film.getId().equals(filmId));
         if (isFilmNotExist) {
