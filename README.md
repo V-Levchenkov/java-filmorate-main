@@ -2,5 +2,5 @@
 Template repository for Filmorate project.
 
 <kbd>
-  <img /src/main/resources/QuickDBD-export.png />
+  <img https://github.com/V-Levchenkov/java-filmorate-main/blob/master/src/main/resources/QuickDBD-export.png) />
 </kbd>
