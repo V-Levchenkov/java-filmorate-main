@@ -2,15 +2,14 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
+import java.util.*;
 
 
 @Service
@@ -19,15 +18,15 @@ public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
-    public Collection<User> getAll() {
-        return userStorage.getAll();
+    public Collection<User> getUsers() {
+        return userStorage.getAllUsers();
     }
 
-    public User create(User user) {
+    public User createUser(User user) {
         log.debug("Запрос на добавление пользователя: {}", user);
         if (user.getName().isBlank()) {
             user.setName(user.getLogin());
@@ -35,54 +34,62 @@ public class UserService {
         return userStorage.create(user);
     }
 
-    public User update(User user) {
+    public void deleteUser(Long id) {
+        validateUserId(id);
+        userStorage.deleteUser(id);
+    }
+
+    public User updateUser(User user) {
         log.debug("Запрос на обновление пользователя: {}", user);
-        userExistOrThrow(user.getId());
+        validateUserId(user.getId());
         return userStorage.update(user);
     }
 
     public void addFriend(Long userId, Long friendId) {
-        userExistOrThrow(userId);
-        userExistOrThrow(friendId);
-        userStorage.getUser(userId).addFriend(friendId);
-        userStorage.getUser(friendId).addFriend(userId);
+        validateUserId(userId);
+        validateUserId(friendId);
+        userStorage.addFriend(userId, friendId);
     }
 
     public void deleteFriend(Long userId, Long friendId) {
-        userExistOrThrow(userId);
-        userExistOrThrow(friendId);
-        userStorage.getUser(userId).deleteFriend(friendId);
-        userStorage.getUser(friendId).deleteFriend(userId);
+        validateUserId(userId);
+        validateUserId(friendId);
+        userStorage.removeFriend(userId, friendId);
     }
 
     public List<User> getUserFriends(Long userId) {
-        userExistOrThrow(userId);
-        return userStorage.getAll().stream()
-                .filter(user -> userStorage.getUser(userId).getFriends().contains(user.getId()))
-                .collect(Collectors.toList());
+        validateUserId(userId);
+        return userStorage.getFriends(userId);
     }
 
     public List<User> getCommonFriends(Long userId, Long otherId) {
         log.info("Запрос общих друзей у пользователей {} и {}", userId, otherId);
-        userExistOrThrow(userId);
-        userExistOrThrow(otherId);
-        Collection<Long> userFriendsList = new ArrayList<>(userStorage.getUser(userId).getFriends());
-        userFriendsList.retainAll(userStorage.getUser(otherId).getFriends());
-        return userStorage.getAll().stream()
-                .filter(user -> userFriendsList.contains(user.getId()))
-                .collect(Collectors.toList());
+        validateUserId(userId);
+        validateUserId(otherId);
+        Set<User> userFriends = new HashSet<>(getUserFriends(userId));
+        Set<User> otherUserFriends = new HashSet<>(getUserFriends(otherId));
+        userFriends.retainAll(otherUserFriends);
+        return new ArrayList<>(userFriends);
     }
 
     public User getUser(Long userId) {
-        userExistOrThrow(userId);
-        return userStorage.getUser(userId);
+        validateUserId(userId);
+        return userStorage.getUserById(userId);
     }
 
-    private void userExistOrThrow(Long userId) {
-        boolean isUserNotExist = userStorage.getAll().stream()
-                .noneMatch(user -> user.getId().equals(userId));
-        if (isUserNotExist) {
-            throw new NoSuchElementException("Пользователя с таким идентификатором не существует");
+    private void validateUserId(Long id) {
+        if (userStorage.getUserById(id) == null) {
+            throw new NotFoundException(String.format("Пользователь c id %s не найден.", id));
+        }
+        validateNameAndLogin(userStorage.getUserById(id));
+    }
+
+    private void validateNameAndLogin(User user) {
+        if (user.getName().isEmpty()) {
+            user.setName(user.getLogin());
+        }
+        if (user.getLogin().contains(" ")) {
+            throw new ValidationException("Ошибка: поле login не должно содержать пробелы");
         }
     }
 }

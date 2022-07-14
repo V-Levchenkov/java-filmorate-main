@@ -1,25 +1,20 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.sql.Date;
 
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 public class User {
     private Long id;
-    private Set<Long> friends = new HashSet<>();
     @Email(message = "invalid email")
     @NotNull(message = "email can't be empty")
     @NotBlank(message = "email can't be empty")
@@ -30,14 +25,7 @@ public class User {
     private String name;
     @NotNull(message = "birthday can't be forget")
     @Past(message = "birthday can't be in future")
-    private LocalDate birthday;
+    private Date birthday;
 
-    public void addFriend(Long friendId) {
-        friends.add(friendId);
-    }
-
-    public void deleteFriend(Long friendId) {
-        friends.remove(friendId);
-    }
 
 }
