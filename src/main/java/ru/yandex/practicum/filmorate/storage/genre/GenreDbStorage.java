@@ -12,6 +12,12 @@ import java.util.List;
 @Repository
 public class GenreDbStorage implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
+    private static final String GET_GENRE_BY_ID = "SELECT * FROM GENRES WHERE GENRE_ID = ?";
+    private static final String GET_GENRES_BY_FILM = "SELECT * FROM GENRES LEFT JOIN FILM_GENRES FG ON GENRES.GENRE_ID = FG.GENRE_ID WHERE FILM_ID = ?";
+    private static final String GET_ALL_GENRES = "SELECT * FROM GENRES";
+    private static final String ASSIGN_GENRE_TO_FILM = "MERGE INTO FILM_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
+    private static final String DELETE_GENRES_BY_FILM = "DELETE FROM FILM_GENRES WHERE FILM_ID = ?";
+
 
     public GenreDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -19,33 +25,29 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Genre getGenreById(Long id) {
-        String sql = "SELECT * FROM GENRES WHERE GENRE_ID = ?";
-        return jdbcTemplate.query(sql, this::makeGenre, id).stream().findAny().orElseThrow(() -> new NotFoundException(String.format("Жанр c id %s не найден.", id)));
+        return jdbcTemplate.query(GET_GENRE_BY_ID, this::makeGenre, id).stream().findAny().orElseThrow(() -> new NotFoundException(String.format("Жанр c id %s не найден.", id)));
     }
 
     @Override
     public List<Genre> getGenresByFilm(Long filmId) {
-        String sql = "SELECT * FROM GENRES LEFT JOIN FILM_GENRES FG ON GENRES.GENRE_ID = FG.GENRE_ID WHERE FILM_ID = ?";
-        return jdbcTemplate.query(sql, this::makeGenre, filmId);
+        return jdbcTemplate.query(GET_GENRES_BY_FILM, this::makeGenre, filmId);
     }
 
     @Override
     public List<Genre> getAllGenres() {
-        return jdbcTemplate.query("SELECT * FROM GENRES", this::makeGenre);
+        return jdbcTemplate.query(GET_ALL_GENRES, this::makeGenre);
     }
 
     @Override
     public void assignGenreToFilm(Long filmId, List<Genre> genres) {
         for (Genre genre : genres) {
             genre.setName(getGenreById(genre.getId()).getName());
-            String sql = "MERGE INTO FILM_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
-            jdbcTemplate.update(sql, filmId, genre.getId());
+            jdbcTemplate.update(ASSIGN_GENRE_TO_FILM, filmId, genre.getId());
         }
     }
 
     public void deleteGenresByFilm(Long filmId) {
-        String sql = "DELETE FROM FILM_GENRES WHERE FILM_ID = ?";
-        jdbcTemplate.update(sql, filmId);
+        jdbcTemplate.update(DELETE_GENRES_BY_FILM, filmId);
     }
 
     private Genre makeGenre(ResultSet rs, int RowNum) throws SQLException {

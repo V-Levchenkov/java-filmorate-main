@@ -12,6 +12,8 @@ import java.util.List;
 @Repository
 public class MpaDbStorage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
+    private static final String GET_MPA_BY_ID = "SELECT * FROM MPA_RATING WHERE RATING_ID = ?";
+    private static final String GET_MPA_VALUES = "SELECT * FROM MPA_RATING";
 
     public MpaDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -19,14 +21,12 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public MpaRating getMpaById(Long id) {
-        String sql = "SELECT * FROM MPA_RATING WHERE RATING_ID = ?";
-        return jdbcTemplate.query(sql, this::makeMpa, id).stream().findAny().orElseThrow(() -> new NotFoundException(String.format("Рейтинг MPA c id %s не найден.", id)));
+        return jdbcTemplate.query(GET_MPA_BY_ID, this::makeMpa, id).stream().findAny().orElseThrow(() -> new NotFoundException(String.format("Рейтинг MPA c id %s не найден.", id)));
     }
 
     @Override
     public List<MpaRating> getMpaValues() {
-        String sql = "SELECT * FROM MPA_RATING";
-        return jdbcTemplate.query(sql, this::makeMpa);
+        return jdbcTemplate.query(GET_MPA_VALUES, this::makeMpa);
     }
 
     private MpaRating makeMpa(ResultSet rs, int rowNum) throws SQLException {

@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -50,24 +49,15 @@ public class FilmController {
         log.debug("Получен запрос PUT (addLike). От ользователя {} поставлен лайк к фильму {}", filmId, userId);
         filmService.addLike(filmId, userId);
     }
-
+    //для ревью - валидация происходит в FilmService
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable("id") Long filmId, @PathVariable("userId") Long userId) {
-        if (filmId <= 0) {
-            throw new IncorrectParameterException("id");
-        }
-        if (userId <= 0) {
-            throw new IncorrectParameterException("userId");
-        }
         filmService.removeLike(filmId, userId);
         log.debug("Получен запрос DELETE (removeLike). Удален лайк пользофвталея {} к фильму {}", filmId, userId);
     }
-
+    //для ревью - валидация происходит в FilmService
     @GetMapping("/popular")
     public List<Film> getTopFilms(@RequestParam(value = "count", defaultValue = "10", required = false) Long count) {
-        if (count <= 0) {
-            throw new IncorrectParameterException("count");
-        }
         log.debug("Получен запрос GET для /films/popular (getHighlyRatedFilms)");
         return filmService.getPopularFilmList(count);
     }
