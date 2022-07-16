@@ -19,10 +19,12 @@ import java.util.List;
 @Slf4j
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final UserService userService;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, UserService userService) {
         this.filmStorage = filmStorage;
+        this.userService = userService;
     }
 
     public Collection<Film> getAll() {
@@ -46,8 +48,9 @@ public class FilmService {
     }
 
     public void removeLike(Long filmId, Long userId) {
-        validateFilmId(filmId);
-        filmStorage.removeLike(filmId, userId);
+        if (getFilm(filmId) != null && userService.getUser(userId) != null) {
+            filmStorage.removeLike(filmId, userId);
+        }
     }
 
     public List<Film> getPopularFilmList(Long count) {
@@ -64,6 +67,7 @@ public class FilmService {
             throw new NotFoundException(String.format("Фильм c id %s не найден.", id));
         }
     }
+
 
     private void validateReleaseDate(Film film) {
         if (film.getReleaseDate().toLocalDate().isBefore(LocalDate.of(1895, 12, 28))) {
