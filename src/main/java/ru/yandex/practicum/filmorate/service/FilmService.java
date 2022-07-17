@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
@@ -19,12 +20,12 @@ import java.util.List;
 @Slf4j
 public class FilmService {
     private final FilmStorage filmStorage;
-    private final UserService userService;
+    private final UserStorage userStorage;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, UserService userService) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
-        this.userService = userService;
+        this.userStorage = userStorage;
     }
 
     public Collection<Film> getAll() {
@@ -48,9 +49,9 @@ public class FilmService {
     }
 
     public void removeLike(Long filmId, Long userId) {
-        if (getFilm(filmId) != null && userService.getUser(userId) != null) {
-            filmStorage.removeLike(filmId, userId);
-        }
+        validateFilmId(filmId);
+        validateUserId(userId);
+    filmStorage.removeLike(filmId, userId);
     }
 
     public List<Film> getPopularFilmList(Long count) {
@@ -64,6 +65,12 @@ public class FilmService {
 
     private void validateFilmId(Long id) {
         if (filmStorage.getFilmById(id) == null) {
+            throw new NotFoundException(String.format("Фильм c id %s не найден.", id));
+        }
+    }
+
+    private void validateUserId(Long id) {
+        if (userStorage.getUserById(id) == null) {
             throw new NotFoundException(String.format("Фильм c id %s не найден.", id));
         }
     }
