@@ -50,13 +50,11 @@ public class FilmController {
         log.debug("Получен запрос PUT (addLike). От ользователя {} поставлен лайк к фильму {}", filmId, userId);
         filmService.addLike(filmId, userId);
     }
-    //для ревью - валидация происходит в FilmService
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable("id") Long filmId, @PathVariable("userId") Long userId) {
         filmService.removeLike(filmId, userId);
         log.debug("Получен запрос DELETE (removeLike). Удален лайк пользофвталея {} к фильму {}", filmId, userId);
     }
-    //для ревью - валидация происходит в FilmService
     @GetMapping("/popular")
     public List<Film> getTopFilms(@RequestParam(value = "count", defaultValue = "10", required = false) Long count) {
         log.debug("Получен запрос GET для /films/popular (getHighlyRatedFilms)");
