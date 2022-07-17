@@ -68,7 +68,6 @@ public class FilmService {
         }
     }
 
-
     private void validateReleaseDate(Film film) {
         if (film.getReleaseDate().toLocalDate().isBefore(LocalDate.of(1895, 12, 28))) {
             throw new ValidationException("Указана некорректная дата выпуска фильма.");
